@@ -49,7 +49,8 @@ export async function decryptSources_v2(id, name, embed) {
             // All Regular Expressions
             const baseUrlRegular = /\|([^|]+)\|sources\|/;
             const draftbaseUrlRegular = /\|([^|]+)\|cdn\|/;
-            const newPatternRegular = /\|([^|]+)\|([^|]+)\|jupiter\|/;
+            const newPatternRegular = /\|kind(?:\|[^|]*)?\|(\d{5})\|(\d{2})\|/;
+            const newPatternRegular3 = /\|([^|]+)\|([^|]+)\|hls2\|/;
             const langValueRegular = /\|master\|([^|]+)\|/;
             const valueBeforeM3u8Regular = /\|129600\|([^|]+(?:\|[^|]+)*)\|m3u8\|/;
             const dataValueRegular = /\|data\|([^|]+)\|/;
@@ -58,12 +59,12 @@ export async function decryptSources_v2(id, name, embed) {
             const cValueRegular = /ab:\[{[^]*?([0-9]+\.[0-9])&/;
             const asnValueRegular = /\|([^|]+)\|asn\|/;
             const spValueRegular = /\|([^|]+)\|sp\|/;
-            const pallValueRegular = /\|file\|([^|]+)\|/;
+            const pallValueRegular = /file\|([^|]+)\|([^|]+)/;
             const cookieValueRegular = /\$.cookie\('file_id',\s*'([^']+)/;
 
             videoPageContent('script').each((i, script) => {
                 const scriptContent = videoPageContent(script).html();
-                
+
                 // Match regular expressions
                 const baseMatch = scriptContent.match(baseUrlRegular);
                 const draftbaseMatch = scriptContent.match(draftbaseUrlRegular);
@@ -91,6 +92,13 @@ export async function decryptSources_v2(id, name, embed) {
                     const reversebefore = `${newPatternMatch[1]}|${newPatternMatch[2]}|hls2`;
                     newPattern = reversebefore.split('|').reverse().join('/');
                     // console.log(`New Pattern Result: ${newPattern}`);
+                } else {
+                    const newPatternmatch2 = scriptContent.match(newPatternRegular3)
+                    if (newPatternmatch2) {
+                        const reversebefore2 = `${newPatternmatch2[1]}|${newPatternmatch2[2]}|hls2`;
+                        newPattern = reversebefore2.split('|').reverse().join('/');
+                        // console.log(`New Pattern Result: ${newPattern}`);
+                    }
                 }
 
                 if (langMatch) {
@@ -111,7 +119,7 @@ export async function decryptSources_v2(id, name, embed) {
                     }
                     // console.log(`Value Before M3U8: ${valueBeforeM3u8}`);
                 }
-                
+
 
                 if (dataMatch) {
                     dataValue = dataMatch[1];
@@ -145,8 +153,14 @@ export async function decryptSources_v2(id, name, embed) {
                 }
 
                 if (pallMatch) {
-                    pallValue = pallMatch[1];
-                    // console.log(`FR Value Result: ${frValue}`);
+                    const firstValue = pallMatch[1];
+                    const secondValue = pallMatch[2];
+                    if (isNaN(firstValue)) {
+                        pallValue = firstValue;
+                    } else {
+                        pallValue = secondValue;
+                        // console.log(`FR Value Result: ${pallValue}`);
+                    }
                 }
 
                 if (cookieMatch) {
@@ -156,12 +170,11 @@ export async function decryptSources_v2(id, name, embed) {
             });
 
             const makeurl = `https://${baseUrl}/${newPattern}/${langValue}/master.m3u8?t=${valueBeforeM3u8}&s=${dataValue}&e=${srvValue}&f=${fileIdValue}&srv=${pallValue}&i=0.4&sp=${spValue}&p1=${pallValue}&p2=${pallValue}&asn=${asnValue}`;
-            
+
             fileLink = makeurl;
-            // console.log(makeUrl);
+            // console.log(makeurl);
 
             if (fileLink) {
-                // Check if fileLink returns a 200 status code
                 try {
                     const response = await axios.get(fileLink);
                     if (response.status === 200) {
@@ -173,14 +186,11 @@ export async function decryptSources_v2(id, name, embed) {
                             savName: savName,
                         };
                     } else {
-                        throw new Error(`File link returned status code ${response.status}`);
+                        throw new Error('File link returned a 404 error code');
                     }
-                } catch (linkError) {
-                    console.error('Error checking file link:', linkError.message);
-                    throw new Error('File link verification failed in Stream wish');
+                } catch (error) {
+                    throw new Error('Error fetching file link: ' + error.message);
                 }
-            } else {
-                throw new Error('File link not found in script tag');
             }
         } else {
             throw new Error('Stream wish linkserver element not found');
