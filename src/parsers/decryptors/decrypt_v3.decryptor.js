@@ -60,6 +60,7 @@ export async function decryptSources_v3(id, name, embed) {
             const spValueRegular = /\|([^|]+)\|sp\|/;
             const frValueRegular = /\|fr\|([^|]+)\|/;
             const cookieValueRegular = /\$.cookie\('file_id',\s*'([^']+)/;
+            const newLangValueRegular = /\|master\|([^|]+)\|/; // New regular expression
 
             videoPageContent('script').each((i, script) => {
                 const scriptContent = videoPageContent(script).html();
@@ -91,12 +92,21 @@ export async function decryptSources_v3(id, name, embed) {
                     // console.log(`New Pattern Result: ${newPattern}`);
                 }
 
+                // Handle language value extraction
                 if (langMatch) {
                     lanmatchvaluepipe = langMatch[2];
                     const lanmatchvaluepipe2 = langMatch2[1];
                     const draftlanfvalue = lanmatchvaluepipe2.replace('_hin', '').replace('_eng', '');
-                    langValue = `,${lanmatchvaluepipe},lang/eng/${draftlanfvalue}_eng,.urlset`
+                    langValue = `,${lanmatchvaluepipe},lang/eng/${draftlanfvalue}_eng,.urlset`;
                     // console.log(`Lang Value Result: ${langValue}`);
+                } else {
+                    // If langMatch is not found, use the new regular expression
+                    const newLangMatch = scriptContent.match(newLangValueRegular);
+                    if (newLangMatch) {
+                        lanmatchvaluepipe = newLangMatch[1];
+                        langValue = `${lanmatchvaluepipe}`;
+                        // console.log(`Lang Value Result (new regex): ${langValue}`);
+                    }
                 }
 
                 if (m3u8Match) {
@@ -166,7 +176,6 @@ export async function decryptSources_v3(id, name, embed) {
             // console.log(makeUrl);
 
             if (fileLink) {
-                // Check if fileLink returns a 200 status code
                 try {
                     const response = await axios.get(fileLink);
                     if (response.status === 200) {
@@ -178,14 +187,11 @@ export async function decryptSources_v3(id, name, embed) {
                             savName: savName,
                         };
                     } else {
-                        throw new Error(`File link returned status code ${response.status}`);
+                        throw new Error('File link returned a 404 error code');
                     }
-                } catch (linkError) {
-                    console.error('Error checking file link:', linkError.message);
-                    throw new Error('File link verification failed in FileMoon');
+                } catch (error) {
+                    throw new Error('Error fetching file link: ' + error.message);
                 }
-            } else {
-                throw new Error('File link not found in script tag');
             }
         } else {
             throw new Error('FileMoon linkserver element not found');
