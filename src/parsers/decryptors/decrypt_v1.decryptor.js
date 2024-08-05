@@ -159,10 +159,9 @@ export async function decryptSources_v1(id, name, embed) {
             const makeurl = `https://${baseUrl}/${newPattern}/${langValue}/master.m3u8?t=${valueBeforeM3u8}&s=${dataValue}&e=${srvValue}&f=${fileIdValue}&srv=${pallValue}&i=0.4&sp=${spValue}&p1=${pallValue}&p2=${pallValue}&asn=${asnValue}`;
             
             fileLink = makeurl;
-            // console.log(makeUrl);
+            // console.log(makeurl);
 
             if (fileLink) {
-                // Check if fileLink returns a 200 status code
                 try {
                     const response = await axios.get(fileLink);
                     if (response.status === 200) {
@@ -174,14 +173,11 @@ export async function decryptSources_v1(id, name, embed) {
                             savName: savName,
                         };
                     } else {
-                        throw new Error(`File link returned status code ${response.status}`);
+                        throw new Error('File link returned a 404 error code');
                     }
-                } catch (linkError) {
-                    console.error('Error checking file link:', linkError.message);
-                    throw new Error('File link verification failed in VidHide');
+                } catch (error) {
+                    throw new Error('Error fetching file link: ' + error.message);
                 }
-            } else {
-                throw new Error('File link not found in script tag');
             }
         } else {
             throw new Error('VidHide linkserver element not found');
