@@ -1,43 +1,42 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from 'chrome-aws-lambda';
 import axios from 'axios';
 import cheerio from 'cheerio';
 
 export async function decryptSources_v1(id, name, embed) {
     const savName = 'VidHide';
     const sourcesUrl = `https://deaddrive.xyz/embed/${embed}`;
-    
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    
-    // Increase navigation timeout
-    await page.setDefaultNavigationTimeout(60000); // Set timeout to 60 seconds (or adjust as needed)
+
+    let browser = null;
 
     try {
+        browser = await puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath,
+            headless: chromium.headless,
+        });
+
+        const page = await browser.newPage();
+
         // Set the user agent
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
 
-        // Navigate to the sources URL
-        await page.goto(sourcesUrl, { waitUntil: 'networkidle2' });
+        await page.goto(sourcesUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
 
-        // Get the page content
-        const pageContent = await page.content();
+        const content = await page.content();
+        const $ = cheerio.load(content);
 
-        // Use cheerio to parse the page content
-        const $ = cheerio.load(pageContent);
-
-        // Find the linkserver element
         const linkServerElement = $('.wrapper > .videocontent > #list-server-more > .list-server-items > .linkserver')
             .filter((i, el) => $(el).text().trim() === savName);
 
         if (linkServerElement.length > 0) {
             const dataVideoUrl = linkServerElement.attr('data-video');
+            await page.goto(dataVideoUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
 
-            // Navigate to the data video URL
-            await page.goto(dataVideoUrl, { waitUntil: 'networkidle2' });
+            const videoPageContent = cheerio.load(await page.content());
 
-            const dataVideoPageContent = await page.content();
-            const videoPageContent = cheerio.load(dataVideoPageContent);
-
+            let fileLink = '';
             let baseUrl = '';
             let newPattern = '';
             let langValue = '';
@@ -52,7 +51,6 @@ export async function decryptSources_v1(id, name, embed) {
             let cookieFileIdValue = '';
             let lanmatchvaluepipe = '';
 
-            // All Regular Expressions
             const baseUrlRegular = /\|([^|]+)\|sources\|/;
             const draftbaseUrlRegular = /\|([^|]*cdn[^|]*)\|/;
             const newPatternRegular = /\|kind(?:\|[^|]*)?\|(\d{5})\|(\d{2})\|/;
@@ -69,8 +67,7 @@ export async function decryptSources_v1(id, name, embed) {
 
             videoPageContent('script').each((i, script) => {
                 const scriptContent = videoPageContent(script).html();
-                
-                // Match regular expressions
+
                 const baseMatch = scriptContent.match(baseUrlRegular);
                 const draftbaseMatch = scriptContent.match(draftbaseUrlRegular);
                 const newPatternMatch = scriptContent.match(newPatternRegular);
@@ -147,15 +144,11 @@ export async function decryptSources_v1(id, name, embed) {
 
             const makeurl = `https://${baseUrl}/${newPattern}/${langValue}/master.m3u8?t=${valueBeforeM3u8}&s=${dataValue}&e=${srvValue}&f=${fileIdValue}&srv=${pallValue}&i=0.4&sp=${spValue}&p1=${pallValue}&p2=${pallValue}&asn=${asnValue}`;
 
-            let fileLink = makeurl;
-            
+            fileLink = makeurl;
+
             if (fileLink) {
                 try {
-                    const response = await axios.get(fileLink, {
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                        }
-                    });
+                    const response = await axios.get(fileLink);
                     if (response.status === 200) {
                         return {
                             type: embed,
@@ -165,7 +158,7 @@ export async function decryptSources_v1(id, name, embed) {
                             savName: savName,
                         };
                     } else {
-                        throw new Error('File link returned a 404 error code');
+                        throw new Error('File link returned a 403 error code');
                     }
                 } catch (error) {
                     throw new Error('Error fetching file link: ' + error.message);
@@ -178,6 +171,14 @@ export async function decryptSources_v1(id, name, embed) {
         console.error('Error during decryption:', error.message);
         console.error(error.stack);
     } finally {
-        await browser.close();
+        if (browser !== null) {
+            await browser.close();
+        }
     }
 }
+
+// Example usage (for testing purposes):
+// (async () => {
+//     const result = await decryptSources_v1('some-id', 'some-name', 'some-embed-code');
+//     console.log(result);
+// })();
