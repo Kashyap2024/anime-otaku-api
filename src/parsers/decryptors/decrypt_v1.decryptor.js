@@ -37,7 +37,7 @@ export async function decryptSources_v1(id, name, embed) {
 
             const videoPage = await axios.get(dataVideoUrl, { headers, maxRedirects: 5 });
             const videoPageContent = cheerio.load(videoPage.data);
-            // console.log(videoPage.data);
+            console.log(videoPage.data);
 
             let fileLink = '';
             let baseUrl = '';
@@ -144,7 +144,7 @@ export async function decryptSources_v1(id, name, embed) {
 
                 if (asnMatch) {
                     asnValue = asnMatch[1];
-                    // console.log(`ASN Value Result: ${asnValue}`);
+                    console.log(`ASN Value Result: ${asnValue}`);
                 }
 
                 if (spMatch) {
