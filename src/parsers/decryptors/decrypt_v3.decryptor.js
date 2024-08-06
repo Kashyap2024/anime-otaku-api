@@ -83,13 +83,13 @@ export async function decryptSources_v3(id, name, embed) {
                 if (baseMatch) {
                     const reversedSegments = `com|${baseMatch[1]}`;
                     baseUrl = reversedSegments.split('|').reverse().join('.');
-                    console.log(`Base URL Result: ${baseUrl}`);
+                    // console.log(`Base URL Result: ${baseUrl}`);
                 }
 
                 if (newPatternMatch) {
                     const reversebefore = `${newPatternMatch[1]}|${newPatternMatch[2]}|hls2`;
                     newPattern = reversebefore.split('|').reverse().join('/');
-                    console.log(`New Pattern Result: ${newPattern}`);
+                    // console.log(`New Pattern Result: ${newPattern}`);
                 }
 
                 // Handle language value extraction
@@ -98,14 +98,14 @@ export async function decryptSources_v3(id, name, embed) {
                     const lanmatchvaluepipe2 = langMatch2[1];
                     const draftlanfvalue = lanmatchvaluepipe2.replace('_hin', '').replace('_eng', '');
                     langValue = `,${lanmatchvaluepipe},lang/eng/${draftlanfvalue}_eng,.urlset`;
-                    console.log(`Lang Value Result: ${langValue}`);
+                    // console.log(`Lang Value Result: ${langValue}`);
                 } else {
                     // If langMatch is not found, use the new regular expression
                     const newLangMatch = scriptContent.match(newLangValueRegular);
                     if (newLangMatch) {
                         lanmatchvaluepipe = newLangMatch[1];
                         langValue = `${lanmatchvaluepipe}`;
-                        console.log(`Lang Value Result (new regex): ${langValue}`);
+                        // console.log(`Lang Value Result (new regex): ${langValue}`);
                     }
                 }
 
@@ -122,29 +122,29 @@ export async function decryptSources_v3(id, name, embed) {
 
                 if (dataMatch) {
                     dataValue = dataMatch[1];
-                    console.log(`Data Value Result: ${dataValue}`);
+                    // console.log(`Data Value Result: ${dataValue}`);
                 }
 
                 if (srvMatch) {
                     srvValue = srvMatch[1];
-                    console.log(`SRV Value Result: ${srvValue}`);
+                    // console.log(`SRV Value Result: ${srvValue}`);
                 }
 
                 if (fileIdMatch) {
                     fileIdValue = fileIdMatch[1];
-                    console.log(`File ID Result: ${fileIdValue}`);
+                    // console.log(`File ID Result: ${fileIdValue}`);
                 }
 
                 if (cMatch) {
                     const fullCValue = cMatch[0];
-                    console.log(`Full C Value: ${fullCValue}`);
+                    // console.log(`Full C Value: ${fullCValue}`);
 
                     // Extracting the first number that starts with two digits followed by `a-z= &`
                     const numberPattern = /[a-z]+= *(\d{2})&/;
                     const numberMatch = fullCValue.match(numberPattern);
                     if (numberMatch) {
                         cValue = numberMatch[1];
-                        console.log(`C Value Result: ${cValue}`);
+                        // console.log(`C Value Result: ${cValue}`);
                     }
                 }
 
@@ -155,17 +155,17 @@ export async function decryptSources_v3(id, name, embed) {
 
                 if (spMatch) {
                     spValue = spMatch[1];
-                    console.log(`SP Value Result: ${spValue}`);
+                    // console.log(`SP Value Result: ${spValue}`);
                 }
 
                 if (frMatch) {
                     frValue = frMatch[1];
-                    console.log(`FR Value Result: ${frValue}`);
+                    // console.log(`FR Value Result: ${frValue}`);
                 }
 
                 if (cookieMatch) {
                     cookieFileIdValue = cookieMatch[1];
-                    console.log(`Cookie File ID Result: ${cookieFileIdValue}`);
+                    // console.log(`Cookie File ID Result: ${cookieFileIdValue}`);
                 }
             });
 
