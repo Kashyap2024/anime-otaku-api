@@ -9,8 +9,15 @@ export async function decryptSources_v1(id, name, embed) {
 
         // Set the user agent
         const headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        };
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Referer': 'https://www.example.com/',
+    'Cookie': 'bh=EjgiTm90L0EpQnJhbmQiO3Y9IjgiLCAiQ2hyb21pdW0iO3Y9IjEyNiIsICJCcmF2ZSI7dj0iMTI2IioCPzA6CSJXaW5kb3dzImD18/i0Bg==; file_id=22115669; i=LQ0vbVDkeTIblSnEqaLV/cJobPlyxI7XJVwmb0By8ogtqCisztFRpIDljM3KAX5beiEqYN3OXtAEUWQiMYzAcNBFMYk=; lang=1; yandexuid=7091130751720781126; yashr=5681767791720781126; ymex=2036141128.yrts.1720781128; yuidss=7091130751720781126'
+};
 
         const sourcesData = await axios.get(sourcesUrl, { headers });
         // console.log(`Fetched sources data successfully`);
