@@ -15,8 +15,6 @@ export async function decryptSources_v1(id, name, embed) {
     'Accept-Encoding': 'gzip, deflate, br',
     'Connection': 'keep-alive',
     'Upgrade-Insecure-Requests': '1',
-    'Referer': 'https://www.example.com/',
-    'Cookie': 'bh=EjgiTm90L0EpQnJhbmQiO3Y9IjgiLCAiQ2hyb21pdW0iO3Y9IjEyNiIsICJCcmF2ZSI7dj0iMTI2IioCPzA6CSJXaW5kb3dzImD18/i0Bg==; file_id=22115669; i=LQ0vbVDkeTIblSnEqaLV/cJobPlyxI7XJVwmb0By8ogtqCisztFRpIDljM3KAX5beiEqYN3OXtAEUWQiMYzAcNBFMYk=; lang=1; yandexuid=7091130751720781126; yashr=5681767791720781126; ymex=2036141128.yrts.1720781128; yuidss=7091130751720781126'
 };
 
         const sourcesData = await axios.get(sourcesUrl, { headers });
@@ -37,7 +35,7 @@ export async function decryptSources_v1(id, name, embed) {
 
             const videoPage = await axios.get(dataVideoUrl, { headers, maxRedirects: 5 });
             const videoPageContent = cheerio.load(videoPage.data);
-            console.log(videoPage.data);
+            // console.log(videoPage.data);
 
             let fileLink = '';
             let baseUrl = '';
@@ -70,6 +68,11 @@ export async function decryptSources_v1(id, name, embed) {
 
             videoPageContent('script').each((i, script) => {
                 const scriptContent = videoPageContent(script).html();
+
+                 if (scriptContent.trim().startsWith('eval')) {
+                    console.log(`Script ${i + 1}:`);
+                    console.log(scriptContent);
+                }
                 
                 // Match regular expressions
                 const baseMatch = scriptContent.match(baseUrlRegular);
