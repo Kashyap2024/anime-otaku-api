@@ -85,13 +85,13 @@ export async function decryptSources_v1(id, name, embed) {
                     const draft2baseurl = `${draftbaseMatch[1]}`;
                     baseUrl = `${reversedSegments}.${draft2baseurl}.com`;
 
-                    // console.log(`Base URL Result: ${baseUrl}`);
+                    console.log(`Base URL Result: ${baseUrl}`);
                 }
 
                 if (newPatternMatch) {
                     const reversebefore = `${newPatternMatch[1]}|${newPatternMatch[2]}|hls2`;
                     newPattern = reversebefore.split('|').reverse().join('/');
-                    // console.log(`New Pattern Result: ${reversebefore}`);
+                    console.log(`New Pattern Result: ${reversebefore}`);
                 }
 
                 if (langMatch) {
@@ -99,7 +99,7 @@ export async function decryptSources_v1(id, name, embed) {
                     // const draftlanfvalue = lanmatchvaluepipe.replace('_x', '_xt');
                     langValue = `${lanmatchvaluepipe}`;
                     // langValue = `,${lanmatchvaluepipe},lang/eng/${draftlanfvalue},.urlset`;
-                    // console.log(`Lang Value Result: ${langValue}`);
+                    console.log(`Lang Value Result: ${langValue}`);
                 }
 
                 if (m3u8Match) {
@@ -110,56 +110,56 @@ export async function decryptSources_v1(id, name, embed) {
                     } else if (parts.length === 2) {
                         valueBeforeM3u8 = `${parts[1]}-${parts[0]}`;
                     }
-                    // console.log(`Value Before M3U8: ${valueBeforeM3u8}`);
+                    console.log(`Value Before M3U8: ${valueBeforeM3u8}`);
                 }
                 
 
                 if (dataMatch) {
                     dataValue = dataMatch[1];
-                    // console.log(`Data Value Result: ${dataValue}`);
+                    console.log(`Data Value Result: ${dataValue}`);
                 }
 
                 if (srvMatch) {
                     srvValue = srvMatch[1];
-                    // console.log(`SRV Value Result: ${srvValue}`);
+                    console.log(`SRV Value Result: ${srvValue}`);
                 }
 
                 if (fileIdMatch) {
                     fileIdValue = fileIdMatch[1];
-                    // console.log(`File ID Result: ${fileIdValue}`);
+                    console.log(`File ID Result: ${fileIdValue}`);
                 }
 
                 if (cMatch) {
                     const fullCValue = cMatch[0];
-                    // console.log(`Full C Value: ${fullCValue}`);
+                    console.log(`Full C Value: ${fullCValue}`);
                     cValue = fullCValue;
                 }
 
                 if (asnMatch) {
                     asnValue = asnMatch[1];
-                    // console.log(`ASN Value Result: ${asnValue}`);
+                    console.log(`ASN Value Result: ${asnValue}`);
                 }
 
                 if (spMatch) {
                     spValue = spMatch[1];
-                    // console.log(`SP Value Result: ${spValue}`);
+                    console.log(`SP Value Result: ${spValue}`);
                 }
 
                 if (pallMatch) {
                     pallValue = pallMatch[1];
-                    // console.log(`FR Value Result: ${pallValue}`);
+                    console.log(`FR Value Result: ${pallValue}`);
                 }
 
                 if (cookieMatch) {
                     cookieFileIdValue = cookieMatch[1];
-                    // console.log(`Cookie File ID Result: ${cookieFileIdValue}`);
+                    console.log(`Cookie File ID Result: ${cookieFileIdValue}`);
                 }
             });
 
             const makeurl = `https://${baseUrl}/${newPattern}/${langValue}/master.m3u8?t=${valueBeforeM3u8}&s=${dataValue}&e=${srvValue}&f=${fileIdValue}&srv=${pallValue}&i=0.4&sp=${spValue}&p1=${pallValue}&p2=${pallValue}&asn=${asnValue}`;
             
             fileLink = makeurl;
-            // console.log(makeurl);
+            console.log(makeurl);
 
             if (fileLink) {
                 try {
