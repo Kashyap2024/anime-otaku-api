@@ -1,38 +1,43 @@
+import puppeteer from 'puppeteer';
 import axios from 'axios';
-import * as cheerio from 'cheerio';
+import cheerio from 'cheerio';
 
 export async function decryptSources_v1(id, name, embed) {
+    const savName = 'VidHide';
+    const sourcesUrl = `https://deaddrive.xyz/embed/${embed}`;
+    
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    
+    // Increase navigation timeout
+    await page.setDefaultNavigationTimeout(60000); // Set timeout to 60 seconds (or adjust as needed)
+
     try {
-        const savName = 'VidHide';
-        const sourcesUrl = `https://deaddrive.xyz/embed/${embed}`;
-        // console.log(`Fetching sources from: ${sourcesUrl}`);
-
         // Set the user agent
-        const headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        };
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
 
-        const sourcesData = await axios.get(sourcesUrl, { headers });
-        // console.log(`Fetched sources data successfully`);
+        // Navigate to the sources URL
+        await page.goto(sourcesUrl, { waitUntil: 'networkidle2' });
 
-        const $ = cheerio.load(sourcesData.data);
-        // console.log(`Sources data content: ${sourcesData.data}`);
+        // Get the page content
+        const pageContent = await page.content();
 
-        // Update the selector to find the linkserver element
+        // Use cheerio to parse the page content
+        const $ = cheerio.load(pageContent);
+
+        // Find the linkserver element
         const linkServerElement = $('.wrapper > .videocontent > #list-server-more > .list-server-items > .linkserver')
             .filter((i, el) => $(el).text().trim() === savName);
 
-        // console.log(`Found ${linkServerElement.length} linkServerElement(s)`);
-
         if (linkServerElement.length > 0) {
             const dataVideoUrl = linkServerElement.attr('data-video');
-            // console.log(`Data video URL: ${dataVideoUrl}`);
 
-            const videoPage = await axios.get(dataVideoUrl, { headers, maxRedirects: 5 });
-            const videoPageContent = cheerio.load(videoPage.data);
-            // console.log(videoPage.data);
+            // Navigate to the data video URL
+            await page.goto(dataVideoUrl, { waitUntil: 'networkidle2' });
 
-            let fileLink = '';
+            const dataVideoPageContent = await page.content();
+            const videoPageContent = cheerio.load(dataVideoPageContent);
+
             let baseUrl = '';
             let newPattern = '';
             let langValue = '';
@@ -46,6 +51,7 @@ export async function decryptSources_v1(id, name, embed) {
             let pallValue = '';
             let cookieFileIdValue = '';
             let lanmatchvaluepipe = '';
+
             // All Regular Expressions
             const baseUrlRegular = /\|([^|]+)\|sources\|/;
             const draftbaseUrlRegular = /\|([^|]*cdn[^|]*)\|/;
@@ -68,7 +74,6 @@ export async function decryptSources_v1(id, name, embed) {
                 const baseMatch = scriptContent.match(baseUrlRegular);
                 const draftbaseMatch = scriptContent.match(draftbaseUrlRegular);
                 const newPatternMatch = scriptContent.match(newPatternRegular);
-                // const newPatternMatch2 = scriptContent.match(newPatternRegular2);
                 const langMatch = scriptContent.match(langValueRegular);
                 const m3u8Match = scriptContent.match(valueBeforeM3u8Regular);
                 const dataMatch = scriptContent.match(dataValueRegular);
@@ -84,22 +89,16 @@ export async function decryptSources_v1(id, name, embed) {
                     const reversedSegments = `${baseMatch[1]}`;
                     const draft2baseurl = `${draftbaseMatch[1]}`;
                     baseUrl = `${reversedSegments}.${draft2baseurl}.com`;
-
-                    // console.log(`Base URL Result: ${baseUrl}`);
                 }
 
                 if (newPatternMatch) {
                     const reversebefore = `${newPatternMatch[1]}|${newPatternMatch[2]}|hls2`;
                     newPattern = reversebefore.split('|').reverse().join('/');
-                    // console.log(`New Pattern Result: ${reversebefore}`);
                 }
 
                 if (langMatch) {
                     lanmatchvaluepipe = langMatch[1];
-                    // const draftlanfvalue = lanmatchvaluepipe.replace('_x', '_xt');
                     langValue = `${lanmatchvaluepipe}`;
-                    // langValue = `,${lanmatchvaluepipe},lang/eng/${draftlanfvalue},.urlset`;
-                    // console.log(`Lang Value Result: ${langValue}`);
                 }
 
                 if (m3u8Match) {
@@ -110,60 +109,53 @@ export async function decryptSources_v1(id, name, embed) {
                     } else if (parts.length === 2) {
                         valueBeforeM3u8 = `${parts[1]}-${parts[0]}`;
                     }
-                    // console.log(`Value Before M3U8: ${valueBeforeM3u8}`);
                 }
-                
 
                 if (dataMatch) {
                     dataValue = dataMatch[1];
-                    // console.log(`Data Value Result: ${dataValue}`);
                 }
 
                 if (srvMatch) {
                     srvValue = srvMatch[1];
-                    // console.log(`SRV Value Result: ${srvValue}`);
                 }
 
                 if (fileIdMatch) {
                     fileIdValue = fileIdMatch[1];
-                    // console.log(`File ID Result: ${fileIdValue}`);
                 }
 
                 if (cMatch) {
                     const fullCValue = cMatch[0];
-                    // console.log(`Full C Value: ${fullCValue}`);
                     cValue = fullCValue;
                 }
 
                 if (asnMatch) {
                     asnValue = asnMatch[1];
-                    // console.log(`ASN Value Result: ${asnValue}`);
                 }
 
                 if (spMatch) {
                     spValue = spMatch[1];
-                    // console.log(`SP Value Result: ${spValue}`);
                 }
 
                 if (pallMatch) {
                     pallValue = pallMatch[1];
-                    // console.log(`FR Value Result: ${pallValue}`);
                 }
 
                 if (cookieMatch) {
                     cookieFileIdValue = cookieMatch[1];
-                    // console.log(`Cookie File ID Result: ${cookieFileIdValue}`);
                 }
             });
 
             const makeurl = `https://${baseUrl}/${newPattern}/${langValue}/master.m3u8?t=${valueBeforeM3u8}&s=${dataValue}&e=${srvValue}&f=${fileIdValue}&srv=${pallValue}&i=0.4&sp=${spValue}&p1=${pallValue}&p2=${pallValue}&asn=${asnValue}`;
-            
-            fileLink = makeurl;
-            // console.log(makeurl);
 
+            let fileLink = makeurl;
+            
             if (fileLink) {
                 try {
-                    const response = await axios.get(fileLink);
+                    const response = await axios.get(fileLink, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        }
+                    });
                     if (response.status === 200) {
                         return {
                             type: embed,
@@ -185,5 +177,7 @@ export async function decryptSources_v1(id, name, embed) {
     } catch (error) {
         console.error('Error during decryption:', error.message);
         console.error(error.stack);
+    } finally {
+        await browser.close();
     }
 }
