@@ -183,16 +183,16 @@ export async function decryptSources_v3(id, name, embed) {
                             server: name,
                             savName: savName,
                         };
-            //     try {
-            //         const response = await axios.get(fileLink);
-            //         if (response.status === 200) {
-            //         } else {
-            //             throw new Error('File link returned a 404 error code');
-            //         }
-            //     } catch (error) {
-            //         throw new Error('Error fetching file link: ' + error.message);
-            //     }
-            // }
+                try {
+                    const response = await axios.get(fileLink);
+                    if (response.status === 200) {
+                    } else {
+                        throw new Error('File link returned a 404 error code');
+                    }
+                } catch (error) {
+                    throw new Error('Error fetching file link: ' + error.message);
+                }
+            }
         } else {
             throw new Error('FileMoon linkserver element not found');
         }
