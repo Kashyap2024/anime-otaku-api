@@ -69,10 +69,6 @@ export async function decryptSources_v1(id, name, embed) {
             videoPageContent('script').each((i, script) => {
                 const scriptContent = videoPageContent(script).html();
 
-                 if (scriptContent.trim().startsWith('eval')) {
-                    console.log(`Script ${i + 1}:`);
-                    console.log(scriptContent);
-                }
                 
                 // Match regular expressions
                 const baseMatch = scriptContent.match(baseUrlRegular);
