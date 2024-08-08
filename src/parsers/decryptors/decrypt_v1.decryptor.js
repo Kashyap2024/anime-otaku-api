@@ -143,7 +143,7 @@ export async function decryptSources_v1(id, name, embed) {
 
                 if (asnMatch) {
                     asnValue = asnMatch[1];
-                    console.log(`ASN Value Result: ${asnValue}`);
+                    // console.log(`ASN Value Result: ${asnValue}`);
                 }
 
                 if (spMatch) {
