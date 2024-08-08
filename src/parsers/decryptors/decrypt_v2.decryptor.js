@@ -30,7 +30,7 @@ export async function decryptSources_v2(id, name, embed) {
 
             const videoPage = await axios.get(dataVideoUrl, { headers, maxRedirects: 5 });
             const videoPageContent = cheerio.load(videoPage.data);
-            console.log(videoPage.data);
+            // console.log(videoPage.data);
 
             let fileLink = '';
             let baseUrl = '';
