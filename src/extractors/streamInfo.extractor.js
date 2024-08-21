@@ -14,12 +14,13 @@ async function extractOtherEpisodes(id) {
     const elements = $(".seasons-block > #detail-ss-list > .detail-infor-content > .ss-list > a");
     
     const episodes = elements.map((index, element) => {
+      const hrefdataid = $(element).attr("href").replace('/', '')
       const title = $(element).attr("title");
       const episode_no = $(element).attr("data-number");
       const data_id = $(element).attr("data-id");
       // const japanese_title = $(element).find(".ssli-detail > .ep-name").attr("data-jname");
       
-      return { data_id, episode_no, title };
+      return { hrefdataid, data_id, episode_no, title };
     }).get();
     
     return episodes;
